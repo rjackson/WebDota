@@ -1,0 +1,15 @@
+{% extends "bootstrap_base.html" %}
+{% block body_content %}
+    <div class="container">
+        <h1>WebDota</h1>
+        <hr>
+        {% for message in get_flashed_messages() %}
+            <div class="flash alert">
+                <button type="button" class="close" data-dismiss="alert">&times;</button>
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% block content %}{% endblock %}
+    <hr>
+    © <a href="http://rjackson.me">RJ</a>, PROBABLY.
+{% endblock %}

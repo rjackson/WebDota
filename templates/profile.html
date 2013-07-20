@@ -1,0 +1,13 @@
+{%  extends "layout.html" %}
+
+{% block content %}
+    <h1>{{ profile.data.playerName }}</h1>
+    <h2>League tickets</h2>
+    <ul>
+        {% for ticket in league_passes %}
+            <li>{{ ticket.owned }} - {{ ticket.name }}</li>
+        {% endfor %}
+    </ul>
+    <pre>{{ prettyprofile }}</pre>
+    <p class="muted">Data last updated {{ profile._last_updated|datetime}}; <a href="/update/{{ profile.account_id }}">refresh.</a></p>
+{% endblock %}

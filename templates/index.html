@@ -1,0 +1,31 @@
+{%  extends "layout.html" %}
+
+{% block content %}
+    <div class="row">
+        <div class="span12">
+            <form action="/search">
+                <div  class="input-append">
+                    <input name="account_id" type="text" class="span2" placeholder="Account ID">
+                    <button type="submit" class="btn">Find profile</button>
+                </div>
+            </form>
+            <hr>
+        </div>
+        <div class="span6">
+            <h1>Profiles</h1>
+            <ul>
+                {% for profile in profiles %}
+                    <li><a href="/profile/{{ profile.account_id }}">{{ profile.data.playerName }} ({{ profile.account_id }})</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+        <div class="span6">
+            <h1>Job queue</h1>
+            <ul>
+                {% for job in jobs %}
+                    <li><a href="/profile/{{ job.account_id }}">{{ job.account_id }}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+{% endblock %}
