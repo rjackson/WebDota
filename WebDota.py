@@ -50,7 +50,7 @@ def index():
                            title="WebDota - An experiment in getting banned.")
 
 
-@app.route("/profile/<_id>")
+@app.route("/profile/<int:_id>")
 def profile(_id):
     data = connection.Profile.find_one({"id": _id})
     if data is None:
@@ -84,7 +84,7 @@ def profile(_id):
                                title=data.data.playerName)
 
 
-@app.route("/match/<_id>")
+@app.route("/match/<int:_id>")
 def match(_id):
     data = connection.Match.find_one({"id": _id})
     if data is None:
