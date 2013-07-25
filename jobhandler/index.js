@@ -16,22 +16,6 @@ var onSteamLogOn = function onSteamLogOn(){
 
         Dota2.launch();
         Dota2.on("ready", function() {
-            // Dota2.setItemPositions([[ITEM ID, POSITION]]);
-            // Dota2.deleteItem(ITEM ID);
-            // Dota2.joinChat("wobwobwob");
-            // setTimeout(function(){ Dota2.sendMessage("wobwobwob", "wowoeagnaeigniaeg"); }, 5000);
-            // setTimeout(function(){ Dota2.leaveChat("wobwobwob"); }, 10000);
-            // Dota2.inviteToGuild(5287, 28956443);
-            // Dota2.setGuildAccountRole(5287, 28956443, 2);
-            // Dota2.cancelInviteToGuild(5287, 75028261);
-            // Dota2.passportDataRequest(28956443);
-            // Dota2.on("passportData", function (accountId, passportData) {
-            //     console.log(passportData.leagueGuesses.stampedPlayers);
-            // });
-            // Dota2.profileRequest(28956443, true);
-            // Dota2.on("profileData", function (accountId, profileData) {
-            //     console.log(JSON.stringify(profileData, null, 2));
-            // });
             setInterval(function handleJobQueue(){
             // setTimeout(function handleJobQueue(){
                 util.log("Handling jobs");
@@ -44,39 +28,82 @@ var onSteamLogOn = function onSteamLogOn(){
                     jobCursor.each(function (err, doc){
                         if(err) throw err;
 
-                        if (doc) Dota2.profileRequest(doc.account_id, true);
-                    });
-
-
-                    Dota2.on("profileData", function (accountId, profileData) {
-                        var profileCollection = db.collection('profiles'),
-                            jobCollection = db.collection('jobs');
-                        if (profileData.status) {
-                            util.log("Amg a status: "+ profileData.status);
+                        // If the item is null then the cursor is exhausted/empty and closed
+                        if(doc === null) {
+                            // Show that the cursor is closed
+                            jobCursor.toArray(function(err, items) {
+                                // Let's close the db
+                                db.close();
+                            });
                         }
-                        profileCollection.update({"account_id": accountId}, {
-                            "data": profileData,
-                            "account_id": accountId,
-                            "_last_updated": (Date.now() / 1000)
-                        }, {upsert:true}, function(err){ console.log(err); });
-                        jobCollection.remove({"account_id": accountId}, function(err){ console.log(err); });
+                        else {
+                            if (doc.attempts > config.MAX_ATTEMPTS) {
+                                jobCollection.remove({"_id": doc._id}, function(err){ console.log(err); });
+                            }
+                            else {
+                                switch (doc.type) {
+                                    case "account":
+                                        Dota2.profileRequest(doc.id, true);
+                                        break;
+                                    case "match":
+                                        Dota2.matchDetailsRequest(doc.id);
+                                        break;
+                                }
+                                doc.attempts += 1;
+                                jobCollection.update({"id": doc.id}, doc, function(err){ console.log(err); });
+                            }
+                        }
                     });
                 });
+            // }, 5000);
             }, 60000);
         });
 
-        Dota2.on("chatMessage", function(channel, personaName, message) {
-            // util.log([channel, personaName, message].join(", "));
+        Dota2.on("profileData", function (accountId, profileData) {
+            MongoClient.connect('mongodb://127.0.0.1:27017/webdota', function(err, db) {
+                if(err) throw err;
+
+                var profileCollection = db.collection('profiles'),
+                    jobCollection = db.collection('jobs');
+
+                if (profileData.status) {
+                    util.log("Amg a status: "+ profileData.status);
+                }
+                profileCollection.update({"id": accountId}, {
+                    "data": profileData,
+                    "id": accountId,
+                    "_last_updated": (Date.now() / 1000)
+                }, {upsert:true}, function(err){ console.log(err); });
+                jobCollection.remove({"type": "account", "id": accountId}, function(err){ console.log(err); });
+
+                db.close();
+            });
         });
 
-        Dota2.on("guildInvite", function(guildId, guildName, inviter) {
-            // Dota2.setGuildAccountRole(guildId, 75028261, 3);
+        Dota2.on("matchData", function (matchId, matchData) {
+            MongoClient.connect('mongodb://127.0.0.1:27017/webdota', function(err, db) {
+                if(err) throw err;
+
+                var matchCollection = db.collection('matches'),
+                    jobCollection = db.collection('jobs');
+
+                if (matchData.status) {
+                    util.log("Amg a status: "+ profileData.status);
+                }
+                matchCollection.update({"id": matchId}, {
+                    "data": matchData,
+                    "id": matchId,
+                    "_last_updated": (Date.now() / 1000)
+                }, {upsert:true}, function(err){ console.log(err); });
+                jobCollection.remove({"type": "match", "id": matchId}, function(err){ console.log(err); });
+
+                db.close();
+            });
         });
 
         Dota2.on("unhandled", function(kMsg) {
             util.log("UNHANDLED MESSAGE " + kMsg);
         });
-        // setTimeout(function(){ Dota2.exit(); }, 5000);
     },
     onSteamSentry = function onSteamSentry(sentry) {
         util.log("Received sentry.");
@@ -87,7 +114,12 @@ var onSteamLogOn = function onSteamLogOn(){
         fs.writeFile('servers', JSON.stringify(servers));
     };
 
-bot.logOn(config.steam_user, config.steam_pass, config.steam_guard_code || fs.readFileSync('sentry'));
+bot.logOn({
+    "accountName": config.steam_user,
+    "password": config.steam_pass,
+    "authCode": config.steam_guard_code,
+    "shaSentryfile": fs.readFileSync('sentry')
+});
 bot.on("loggedOn", onSteamLogOn)
     .on('sentry', onSteamSentry)
     .on('servers', onSteamServers);

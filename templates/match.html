@@ -1,0 +1,317 @@
+{% extends "layout.html" %}
+{% block content %}
+    <h1>{{ match.id }}</h1>
+    <div class="tabbable">
+        <ul class="nav nav-tabs">
+            <li class="active"><a href="#overview" data-toggle="tab">Overview</a></li>
+            <li><a href="#players" data-toggle="tab">Players</a></li>
+            <li><a href="#data" data-toggle="tab">Data objects</a></li>
+        </ul>
+        <div class="tab-content">
+            <div class="tab-pane active" id="overview">
+                {% for column in match.data.match.players|sort(attribute="playerSlot")|slice(2) %}
+                    {% set team_name =  match.data.match.radiantTeamName if column[0].playerSlot < 128 else match.data.match.direTeamName %}
+                    <h4>
+                        {{ "Radiant" if column[0].playerSlot < 128 else "Dire" }}
+                        {% if team_name is not none %}
+                            ({{ team_name }})
+                        {% endif %}
+                    </h4>
+                    <table class="table table-striped table-bordered table-condensed">
+                        <thead>
+                            <tr>
+                                <td class="span2">Player</td>
+                                <td>Lvl</td>
+                                <td>Hero</td>
+                                <td>K</td>
+                                <td>D</td>
+                                <td>A</td>
+                                <td>Items</td>
+                                <td>Gold</td>
+                                <td>LH</td>
+                                <td>DN</td>
+                                <td>GPM</td>
+                                <td>XPM</td>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for player in column %}
+                            <tr>
+                                <td><a href="/player/{{ player.accountId }}">{{ player.playerName }}</a></td>
+                                <td>{{ player.level }}</td>
+                                <td>{{ player.heroId }}</td>
+                                <td>{{ player.kills }}</td>
+                                <td>{{ player.deaths }}</td>
+                                <td>{{ player.assists }}</td>
+                                <td>
+                                    <span>{{ player.item0 }}</span>
+                                    <span>{{ player.item1 }}</span>
+                                    <span>{{ player.item2 }}</span>
+                                    <span>{{ player.item3 }}</span>
+                                    <span>{{ player.item4 }}</span>
+                                    <span>{{ player.item5 }}</span>
+                                </td>
+                                <td>{{ player.gold }}</td>
+                                <td>{{ player.lastHits }}</td>
+                                <td>{{ player.denies }}</td>
+                                <td>{{ player.goldPerMin }}</td>
+                                <td>{{ player.xPPerMin }}</td>
+                            </tr>
+                            {% endfor %}
+                            <tr>
+                                <td colspan="3"><em>Totals</em></td>
+                                <td>{{ column|map(attribute="kills")|sum }}</td>
+                                <td>{{ column|map(attribute="deaths")|sum }}</td>
+                                <td>{{ column|map(attribute="assists")|sum }}</td>
+                                <td>&nbsp;</td>
+                                <td>{{ column|map(attribute="gold")|sum }}</td>
+                                <td>{{ column|map(attribute="lastHits")|sum }}</td>
+                                <td>{{ column|map(attribute="denies")|sum }}</td>
+                                <td>{{ column|map(attribute="goldPerMin")|sum }}</td>
+                                <td>{{ column|map(attribute="xPPerMin")|sum }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                {% endfor %}
+                <dl class="dl-horizontal">
+                    <dt>Good guys win?</dt>
+                    <dd>{{ match.data.match.goodGuysWin }}&nbsp;</dd>
+                    <dt>Duration</dt>
+                    <dd>{{ match.data.match.duration }}&nbsp;</dd>
+                    <dt>Start time</dt>
+                    <dd>{{ match.data.match.startTime|unix_strftime}} UTC</dd>
+                    <dt>Tower status</dt>
+                    <dd>{{ match.data.match.towerStatus }}&nbsp;</dd>
+                    <dt>Barracks status</dt>
+                    <dd>{{ match.data.match.barracksStatus }}&nbsp;</dd>
+                    <dt>Cluster</dt>
+                    <dd>{{ match.data.match.cluster }}&nbsp;</dd>
+                    <dt>First blood time</dt>
+                    <dd>{{ match.data.match.firstBloodTime }}s</dd>
+                    <dt>Replay salt</dt>
+                    <dd>{{ match.data.match.replaySalt }}&nbsp;</dd>
+                    <dt>Server IP</dt>
+                    <dd>{{ match.data.match.serverIp }}&nbsp;</dd>
+                    <dt>Server port</dt>
+                    <dd>{{ match.data.match.serverPort }}&nbsp;</dd>
+                    <dt>Lobby type</dt>
+                    <dd>{{ match.data.match.lobbyType }}&nbsp;</dd>
+                    <dt>Human players</dt>
+                    <dd>{{ match.data.match.humanPlayers }}&nbsp;</dd>
+                    <dt>Average skill</dt>
+                    <dd>{{ match.data.match.averageSkill }}&nbsp;</dd>
+                    <dt>Game balance</dt>
+                    <dd>{{ match.data.match.gameBalance }}&nbsp;</dd>
+                    <dt>Radiant Team ID</dt>
+                    <dd>{{ match.data.match.radiantTeamId }}&nbsp;</dd>
+                    <dt>Dire Team ID</dt>
+                    <dd>{{ match.data.match.direTeamId }}&nbsp;</dd>
+                    <dt>League ID</dt>
+                    <dd>{{ match.data.match.leagueid }}&nbsp;</dd>
+                    <dt>Radiant team name</dt>
+                    <dd>{{ match.data.match.radiantTeamName }}&nbsp;</dd>
+                    <dt>Dire team name</dt>
+                    <dd>{{ match.data.match.direTeamName }}&nbsp;</dd>
+                    <dt>Radiant team logo</dt>
+                    <dd>{{ match.data.match.radiantTeamLogo }}&nbsp;</dd>
+                    <dt>Dire team logo</dt>
+                    <dd>{{ match.data.match.direTeamLogo }}&nbsp;</dd>
+                    <dt>Dire team complete?</dt>
+                    <dd>{{ match.data.match.direTeamComplete }}&nbsp;</dd>
+                    <dt>Radiant team complete?</dt>
+                    <dd>{{ match.data.match.radiantTeamComplete }}&nbsp;</dd>
+                    <dt>Game mode</dt>
+                    <dd>{{ match.data.match.gameMode }}&nbsp;</dd>
+                    <dt>Match Seq Num</dt>
+                    <dd>{{ match.data.match.matchSeqNum }}&nbsp;</dd>
+                    <dt>Replay state</dt>
+                    <dd>{{ match.data.match.replayState }}&nbsp;</dd>
+                    <dt>Radiant Guild ID</dt>
+                    <dd>{{ match.data.match.radiantGuildId }}&nbsp;</dd>
+                    <dt>Dire Guild ID</dt>
+                    <dd>{{ match.data.match.direGuildId }}&nbsp;</dd>
+                    <dt>Radiant team tag</dt>
+                    <dd>{{ match.data.match.radiantTeamTag }}&nbsp;</dd>
+                    <dt>Dire team tag</dt>
+                    <dd>{{ match.data.match.direTeamTag }}&nbsp;</dd>
+                    <dt>Vote</dt>
+                    <dd>{{ match.data.vote}}&nbsp;</dd>
+                    <dt>Votes</dt>
+                    <dd>
+                        <div class="progress">
+                            {% set total_votes = match.data.match.positiveVotes + match.data.match.negativeVotes or 2 %}
+                            {% set positiveVotes = total_votes/2 if match.data.match.positiveVotes == 0 else match.data.match.positiveVotes %}
+                            {% set negativeVotes = total_votes/2 if match.data.match.negativeVotes == 0 else match.data.match.negativeVotes %}
+
+                            <div class="bar bar-success" style="width: {{ (positiveVotes / total_votes)* 100 }}%;"><i class="icon-thumbs-up icon-white"></i> ({{ match.data.match.positiveVotes }})</div>
+                            <div class="bar" style="width: {{ (negativeVotes / total_votes)* 100 }}%;"><i class="icon-thumbs-down icon-white"></i> ({{ match.data.match.negativeVotes }})</div>
+                        </div>
+                    </dd>
+                    {% if match.data.match.picksBans is not none %}
+                        <dt>Picks & Bans</dt>
+                        <dd>
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <td>&nbsp;</td>
+                                        <td>Radiant</td>
+                                        <td>Dire</td>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                {% for pickBan in match.data.match.picksBans|batch(2) %}
+                                    <tr>
+                                        {% set radiant = pickBan[0] if pickBan[0].team == 0 else pickBan[1]%}
+                                        {% set dire = pickBan[0] if pickBan[0].team == 1 else pickBan[1]%}
+
+                                        <td>{{ "Pick" if pickBan[0].isPick == 1 else "Ban" }}</td>
+                                        <td>{{ radiant.heroId }}</td>
+                                        <td>{{ dire.heroId }}</td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </dd>
+                    {% endif %}
+                </dl>
+            </div>
+            <div class="tab-pane" id="players">
+                <div class="row">
+                    {% set c_i = 0 %}
+                    {% for column in match.data.match.players|sort(attribute="playerSlot")|slice(2) %}
+                        {% set c_i = c_i + 1 %}
+                        <div class="span6">
+                            {% set team_name =  match.data.match.radiantTeamName if column[0].playerSlot < 128 else match.data.match.direTeamName %}
+                            <h4>
+                                {{ "Radiant" if column[0].playerSlot < 128 else "Dire" }}
+                                {% if team_name is not none %}
+                                    ({{ team_name }})
+                                {% endif %}
+                            </h4>
+                            <div class="accordion" id="accordion{{ c_i }}">
+                                {% set p_i = 0 %}
+                                {% for player in column %}
+                                    {% set p_i = p_i + 1 %}
+                                    <div class="accordion-group">
+                                        <div class="accordion-heading">
+                                            <a class="accordion-toggle" data-toggle="collapse" data-parent="#accordion{{ c_i }}" href="#collapse{{ c_i }}_{{ p_i }}">
+                                                {{ player.playerName }}
+                                            </a>
+                                        </div>
+                                        <div id="collapse{{ c_i }}_{{ p_i }}" class="accordion-body collapse">
+                                            <div class="accordion-inner">
+                                                <dl class="dl-horizontal">
+                                                    <dt>accountId</dt>
+                                                    <dd><a href="/profile/{{ player.accountId }}">{{ player.accountId }}</a></dd>
+                                                    <dt>playerSlot</dt>
+                                                    <dd>{{ player.playerSlot }}&nbsp;</dd>
+                                                    <dt>heroId</dt>
+                                                    <dd>{{ player.heroId }}&nbsp;</dd>
+                                                    <dt>item_0</dt>
+                                                    <dd>{{ player.item0 }}&nbsp;</dd>
+                                                    <dt>item_1</dt>
+                                                    <dd>{{ player.item1 }}&nbsp;</dd>
+                                                    <dt>item_2</dt>
+                                                    <dd>{{ player.item2 }}&nbsp;</dd>
+                                                    <dt>item_3</dt>
+                                                    <dd>{{ player.item3 }}&nbsp;</dd>
+                                                    <dt>item_4</dt>
+                                                    <dd>{{ player.item4 }}&nbsp;</dd>
+                                                    <dt>item_5</dt>
+                                                    <dd>{{ player.item5 }}&nbsp;</dd>
+                                                    <dt>expectedTeamContribution</dt>
+                                                    <dd>{{ player.expectedTeamContribution }}&nbsp;</dd>
+                                                    <dt>scaledMetric</dt>
+                                                    <dd>{{ player.scaledMetric }}&nbsp;</dd>
+                                                    <dt>previousRank</dt>
+                                                    <dd>{{ player.previousRank }}&nbsp;</dd>
+                                                    <dt>rankChange</dt>
+                                                    <dd>{{ player.rankChange }}&nbsp;</dd>
+                                                    <dt>kills</dt>
+                                                    <dd>{{ player.kills }}&nbsp;</dd>
+                                                    <dt>deaths</dt>
+                                                    <dd>{{ player.deaths }}&nbsp;</dd>
+                                                    <dt>assists</dt>
+                                                    <dd>{{ player.assists }}&nbsp;</dd>
+                                                    <dt>leaverStatus</dt>
+                                                    <dd>{{ player.leaverStatus }}&nbsp;</dd>
+                                                    <dt>gold</dt>
+                                                    <dd>{{ player.gold }}&nbsp;</dd>
+                                                    <dt>lastHits</dt>
+                                                    <dd>{{ player.lastHits }}&nbsp;</dd>
+                                                    <dt>denies</dt>
+                                                    <dd>{{ player.denies }}&nbsp;</dd>
+                                                    <dt>goldPerMin</dt>
+                                                    <dd>{{ player.goldPerMin }}&nbsp;</dd>
+                                                    <dt>XPPerMin</dt>
+                                                    <dd>{{ player.XPPerMin }}&nbsp;</dd>
+                                                    <dt>goldSpent</dt>
+                                                    <dd>{{ player.goldSpent }}&nbsp;</dd>
+                                                    <dt>heroDamage</dt>
+                                                    <dd>{{ player.heroDamage }}&nbsp;</dd>
+                                                    <dt>towerDamage</dt>
+                                                    <dd>{{ player.towerDamage }}&nbsp;</dd>
+                                                    <dt>heroHealing</dt>
+                                                    <dd>{{ player.heroHealing }}&nbsp;</dd>
+                                                    <dt>level</dt>
+                                                    <dd>{{ player.level }}&nbsp;</dd>
+                                                    <dt>timeLastSeen</dt>
+                                                    <dd>{{ player.timeLastSeen }}&nbsp;</dd>
+                                                    <dt>playerName</dt>
+                                                    <dd>{{ player.playerName }}&nbsp;</dd>
+                                                    <dt>supportAbilityValue</dt>
+                                                    <dd>{{ player.supportAbilityValue }}&nbsp;</dd>
+                                                    <dt>feedingDetected</dt>
+                                                    <dd>{{ player.feedingDetected }}&nbsp;</dd>
+                                                    <dt>searchRank</dt>
+                                                    <dd>{{ player.searchRank }}&nbsp;</dd>
+                                                    <dt>searchRankUncertainty</dt>
+                                                    <dd>{{ player.searchRankUncertainty }}&nbsp;</dd>
+                                                    <dt>rankUncertaintyChange</dt>
+                                                    <dd>{{ player.rankUncertaintyChange }}&nbsp;</dd>
+                                                    <dt>heroPlayCount</dt>
+                                                    <dd>{{ player.heroPlayCount }}&nbsp;</dd>
+                                                    <dt>partyId</dt>
+                                                    <dd>{{ player.partyId }}&nbsp;</dd>
+                                                    <dt>scaledKills</dt>
+                                                    <dd>{{ player.scaledKills }}&nbsp;</dd>
+                                                    <dt>scaledDeaths</dt>
+                                                    <dd>{{ player.scaledDeaths }}&nbsp;</dd>
+                                                    <dt>scaledAssists</dt>
+                                                    <dd>{{ player.scaledAssists }}&nbsp;</dd>
+                                                    <dt>claimedFarmGold</dt>
+                                                    <dd>{{ player.claimedFarmGold }}&nbsp;</dd>
+                                                    <dt>supportGold</dt>
+                                                    <dd>{{ player.supportGold }}&nbsp;</dd>
+                                                    <dt>claimedDenies</dt>
+                                                    <dd>{{ player.claimedDenies }}&nbsp;</dd>
+                                                    <dt>claimedMisses</dt>
+                                                    <dd>{{ player.claimedMisses }}&nbsp;</dd>
+                                                    <dt>misses</dt>
+                                                    <dd>{{ player.misses }}&nbsp;</dd>
+                                                </dl>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="tab-pane" id="data">
+                <pre>{{ prettydata }}</pre>
+            </div>
+        </div>
+    </div>
+    <hr>
+    <p class="muted">Data collected {{ match._last_updated|unix_strftime}} UTC.</p>
+    <div>
+        <form class="form-inline" style="display: inline-block; margin: 0;" action="/update">
+            <input name="type" class="hide" type="text" value="match"/>
+            <input name="id" class="hide" type="number" value="{{ match.id }}"/>
+            <button class="btn btn-mini" type="submit">Update</button>
+        </form>
+        <a class="btn btn-mini" href="http://replay{{ match.data.match.cluster }}.valve.net/570/{{ match.data.match.matchId }}_{{ match.data.match.replaySalt }}.dem.bz2">Download replay</a>
+    </div>
+{% endblock %}

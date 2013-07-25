@@ -1,13 +1,107 @@
-{%  extends "layout.html" %}
+{% extends "layout.html" %}
+{% block style %}
+    {{ super() }}
+    <style>
+        /* Progress bars with centered text */
+        .progress {
+            position: relative;
+        }
 
+        .bar {
+            z-index: 1;
+            position: absolute;
+        }
+
+        .progress span{
+            position: absolute;
+            top: 0;
+            z-index: 2;
+            color: black;
+            text-align: center;
+            width: 100%;
+        }
+    </style>
+{% endblock %}
 {% block content %}
     <h1>{{ profile.data.playerName }}</h1>
-    <h2>League tickets</h2>
-    <ul>
-        {% for ticket in league_passes %}
-            <li>{{ ticket.owned }} - {{ ticket.name }}</li>
-        {% endfor %}
-    </ul>
-    <pre>{{ prettyprofile }}</pre>
-    <p class="muted">Data last updated {{ profile._last_updated|datetime}}; <a href="/update/{{ profile.account_id }}">refresh.</a></p>
+    <div class="tabbable">
+        <ul class="nav nav-tabs">
+            <li class="active"><a href="#overview" data-toggle="tab">Overview</a></li>
+            <li><a href="#league_passes" data-toggle="tab">League Tickets</a></li>
+            <li><a href="#matches" data-toggle="tab">Matches</a></li>
+            <li><a href="#data" data-toggle="tab">Data objects</a></li>
+        </ul>
+        <div class="tab-content">
+            <div class="tab-pane active" id="overview">
+                <dl class="dl-horizontal">
+                    <dt>Level</dt>
+                    <dd>
+                        {{ profile.data.gameAccountClient.level }}
+                    </dd>
+                    <dt>Experience</dt>
+                    <dd>
+                        <div class="progress progress-striped">
+                            <div class="bar" style="width: {{ (profile.data.gameAccountClient.xp|int / 1000) * 100 }}%;"></div>
+                            <span class="text-center">Battle Points <strong>{{ profile.data.gameAccountClient.xp }} / 1000</strong></span>
+                        </div>
+                    </dd>
+                    <dt>Tickets owned</dt>
+                    <dd>{{ league_passes|selectattr("owned")|list|length }} out of {{ league_passes|list|length }}</dd>
+                    <dt>Has compendium?</dt>
+                    <dd>{{ profile.data.hasPassport }}</dd>
+                    <dt>Best heroes</dt>
+                    <dd>{{ profile.data.heroes|map(attribute="heroId")|get_hero_name|join(", ") or None}}</dd>
+                    <dt>Showcased hero<dt>
+                    <dd>{{ profile.data.showcaseHero.heroId|get_hero_name or None}}</dd>
+                    <dt>Team</dt>
+                    <dd>{{ profile.data.teamName }} ({{ profile.data.teamTag }})</dd>
+                    <dt>Commendations</dt>
+                    <dd>
+                        <div class="progress">
+                          <div class="bar bar-success" style="margin-left:{{ 100 - commendations.leadership_pc }}%; width: {{ commendations.leadership_pc}}%;">Leadership ({{ commendations.leadership }})</div>
+                          <div class="bar bar-warning" style="margin-left:{{ commendations.friendly_pc + commendations.forgiving_pc }}%; width: {{ commendations.teaching_pc }}%;">Teaching ({{ commendations.teaching }})</div>
+                          <div class="bar bar-danger" style="margin-left:{{ commendations.friendly_pc }}%; width: {{ commendations.forgiving_pc }}%;">Forgiving ({{ commendations.forgiving }})</div>
+                          <div class="bar bar-info" style="width: {{ commendations.friendly_pc }}%;">Friendly ({{ commendations.friendly }})</div>
+                        </div>
+                    </dd>
+                </dl>
+            </div>
+            <div class="tab-pane" id="league_passes">
+                <div class="row">
+                    {% for column in league_passes|sort(attribute="schema_id")|slice(2) %}
+                        <div class="span6">
+                            <ul class="unstyled">
+                                {% for ticket in column %}
+                                    <li class="{{ "muted" if not ticket.owned else "" }}">{{ "✔" if ticket.owned else "✘" }} {{ ticket.name }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="tab-pane" id="matches">
+                {% for column in matches|sort(attribute="id")|slice(2) %}
+                    <div class="span6">
+                        <ul class="unstyled">
+                            {% for match in column %}
+                                <li><a href="/match/{{ match.id }}">{{ match.id }} ({{ match.data.match.startTime|unix_strftime}} UTC)</a></li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                {% endfor %}
+            </div>
+            <div class="tab-pane" id="data">
+                <pre>{{ prettydata }}</pre>
+            </div>
+        </div>
+    </div>
+    <hr>
+    <p class="muted">Data collected {{ profile._last_updated|unix_strftime}} UTC.</p>
+    <div class="btn-group">
+        <form class="form-inline" style="display: inline-block; margin: 0;" action="/update">
+            <input name="type" class="hide" type="text" value="account"/>
+            <input name="id" class="hide" type="number" value="{{ profile.id }}"/>
+            <button class="btn btn-mini" type="submit">Update</button>
+        </form>
+    </div>
 {% endblock %}
