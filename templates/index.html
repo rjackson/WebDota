@@ -2,7 +2,7 @@
 
 {% block content %}
     <div class="row">
-        <div class="span4">
+        <div class="col-4">
             <h1>Profiles</h1>
             <ul>
                 {% for profile in profiles %}
@@ -10,7 +10,7 @@
                 {% endfor %}
             </ul>
         </div>
-        <div class="span4">
+        <div class="col-4">
             <h1>Matches</h1>
             <ul>
                 {% for match in matches %}
@@ -18,7 +18,7 @@
                 {% endfor %}
             </ul>
         </div>
-        <div class="span4">
+        <div class="col-4">
             <h1>Job queue</h1>
             <ul>
                 {% for job in jobs %}

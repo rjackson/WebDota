@@ -1,6 +1,5 @@
 from flask import Flask, render_template, flash, redirect, request
 from flask.ext.cache import Cache
-from flask.ext.bootstrap import Bootstrap
 from mongokit import Connection
 import steam
 import pprint
@@ -12,7 +11,6 @@ app.config.from_pyfile("settings.cfg")
 connection = Connection(app.config['MONGODB_HOST'],
                         app.config['MONGODB_PORT'])
 
-Bootstrap(app)
 cache = Cache(app)
 connection.register([Profile, Job, Match])
 app.add_template_filter(unix_strftime)
@@ -49,6 +47,9 @@ def index():
                            matches=connection.Match.find(),
                            title="WebDota - An experiment in getting banned.")
 
+@app.route("/account/<int:_id>")
+def account(_id):
+    return redirect("/profile/{}".format(_id))
 
 @app.route("/profile/<int:_id>")
 def profile(_id):

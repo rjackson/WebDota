@@ -20,7 +20,7 @@
                     <table class="table table-striped table-bordered table-condensed">
                         <thead>
                             <tr>
-                                <td class="span2">Player</td>
+                                <td class="col-2">Player</td>
                                 <td>Lvl</td>
                                 <td>Hero</td>
                                 <td>K</td>
@@ -143,8 +143,8 @@
                             {% set positiveVotes = total_votes/2 if match.data.match.positiveVotes == 0 else match.data.match.positiveVotes %}
                             {% set negativeVotes = total_votes/2 if match.data.match.negativeVotes == 0 else match.data.match.negativeVotes %}
 
-                            <div class="bar bar-success" style="width: {{ (positiveVotes / total_votes)* 100 }}%;"><i class="icon-thumbs-up icon-white"></i> ({{ match.data.match.positiveVotes }})</div>
-                            <div class="bar" style="width: {{ (negativeVotes / total_votes)* 100 }}%;"><i class="icon-thumbs-down icon-white"></i> ({{ match.data.match.negativeVotes }})</div>
+                            <div class="progress-bar progress-bar-success" style="width: {{ (positiveVotes / total_votes)* 100 }}%;"><i class="icon-thumbs-up icon-white"></i> ({{ match.data.match.positiveVotes }})</div>
+                            <div class="progress-bar" style="width: {{ (negativeVotes / total_votes)* 100 }}%;"><i class="icon-thumbs-down icon-white"></i> ({{ match.data.match.negativeVotes }})</div>
                         </div>
                     </dd>
                     {% if match.data.match.picksBans is not none %}
@@ -180,7 +180,7 @@
                     {% set c_i = 0 %}
                     {% for column in match.data.match.players|sort(attribute="playerSlot")|slice(2) %}
                         {% set c_i = c_i + 1 %}
-                        <div class="span6">
+                        <div class="col-6">
                             {% set team_name =  match.data.match.radiantTeamName if column[0].playerSlot < 128 else match.data.match.direTeamName %}
                             <h4>
                                 {{ "Radiant" if column[0].playerSlot < 128 else "Dire" }}
@@ -305,13 +305,13 @@
         </div>
     </div>
     <hr>
-    <p class="muted">Data collected {{ match._last_updated|unix_strftime}} UTC.</p>
+    <p class="text-muted">Data collected {{ match._last_updated|unix_strftime}} UTC.</p>
     <div>
         <form class="form-inline" style="display: inline-block; margin: 0;" action="/update">
             <input name="type" class="hide" type="text" value="match"/>
             <input name="id" class="hide" type="number" value="{{ match.id }}"/>
-            <button class="btn btn-mini" type="submit">Update</button>
+            <button class="btn btn-default btn-small" type="submit">Update</button>
         </form>
-        <a class="btn btn-mini" href="http://replay{{ match.data.match.cluster }}.valve.net/570/{{ match.data.match.matchId }}_{{ match.data.match.replaySalt }}.dem.bz2">Download replay</a>
+        <a class="btn btn-default btn-small" href="http://replay{{ match.data.match.cluster }}.valve.net/570/{{ match.data.match.matchId }}_{{ match.data.match.replaySalt }}.dem.bz2">Download replay</a>
     </div>
 {% endblock %}

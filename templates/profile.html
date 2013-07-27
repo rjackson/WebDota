@@ -7,12 +7,7 @@
             position: relative;
         }
 
-        .bar {
-            z-index: 1;
-            position: absolute;
-        }
-
-        .progress span{
+        .progress > span{
             position: absolute;
             top: 0;
             z-index: 2;
@@ -21,6 +16,7 @@
             width: 100%;
         }
     </style>
+
 {% endblock %}
 {% block content %}
     <h1>{{ profile.data.playerName }}</h1>
@@ -41,8 +37,8 @@
                     <dt>Experience</dt>
                     <dd>
                         <div class="progress progress-striped">
-                            <div class="bar" style="width: {{ (profile.data.gameAccountClient.xp|int / 1000) * 100 }}%;"></div>
                             <span class="text-center">Battle Points <strong>{{ profile.data.gameAccountClient.xp }} / 1000</strong></span>
+                            <div class="progress-bar" style="width: {{ (profile.data.gameAccountClient.xp|int / 1000) * 100 }}%;"></div>
                         </div>
                     </dd>
                     <dt>Tickets owned</dt>
@@ -58,10 +54,10 @@
                     <dt>Commendations</dt>
                     <dd>
                         <div class="progress">
-                          <div class="bar bar-success" style="margin-left:{{ 100 - commendations.leadership_pc }}%; width: {{ commendations.leadership_pc}}%;">Leadership ({{ commendations.leadership }})</div>
-                          <div class="bar bar-warning" style="margin-left:{{ commendations.friendly_pc + commendations.forgiving_pc }}%; width: {{ commendations.teaching_pc }}%;">Teaching ({{ commendations.teaching }})</div>
-                          <div class="bar bar-danger" style="margin-left:{{ commendations.friendly_pc }}%; width: {{ commendations.forgiving_pc }}%;">Forgiving ({{ commendations.forgiving }})</div>
-                          <div class="bar bar-info" style="width: {{ commendations.friendly_pc }}%;">Friendly ({{ commendations.friendly }})</div>
+                          <div class="progress-bar progress-bar-success" style="width: {{ commendations.leadership_pc}}%;">Leadership ({{ commendations.leadership }})</div>
+                          <div class="progress-bar progress-bar-warning" style="width: {{ commendations.teaching_pc }}%;">Teaching ({{ commendations.teaching }})</div>
+                          <div class="progress-bar progress-bar-danger" style="width: {{ commendations.forgiving_pc }}%;">Forgiving ({{ commendations.forgiving }})</div>
+                          <div class="progress-bar progress-bar-info" style="width: {{ commendations.friendly_pc }}%;">Friendly ({{ commendations.friendly }})</div>
                         </div>
                     </dd>
                 </dl>
@@ -69,10 +65,10 @@
             <div class="tab-pane" id="league_passes">
                 <div class="row">
                     {% for column in league_passes|sort(attribute="schema_id")|slice(2) %}
-                        <div class="span6">
+                        <div class="col-6">
                             <ul class="unstyled">
                                 {% for ticket in column %}
-                                    <li class="{{ "muted" if not ticket.owned else "" }}">{{ "✔" if ticket.owned else "✘" }} {{ ticket.name }}</li>
+                                    <li class="{{ "text-muted" if not ticket.owned else "" }}">{{ "✔" if ticket.owned else "✘" }} {{ ticket.name }}</li>
                                 {% endfor %}
                             </ul>
                         </div>
@@ -81,7 +77,7 @@
             </div>
             <div class="tab-pane" id="matches">
                 {% for column in matches|sort(attribute="id")|slice(2) %}
-                    <div class="span6">
+                    <div class="col-6">
                         <ul class="unstyled">
                             {% for match in column %}
                                 <li><a href="/match/{{ match.id }}">{{ match.id }} ({{ match.data.match.startTime|unix_strftime}} UTC)</a></li>
@@ -96,12 +92,12 @@
         </div>
     </div>
     <hr>
-    <p class="muted">Data collected {{ profile._last_updated|unix_strftime}} UTC.</p>
+    <p class="text-muted">Data collected {{ profile._last_updated|unix_strftime}} UTC.</p>
     <div class="btn-group">
         <form class="form-inline" style="display: inline-block; margin: 0;" action="/update">
             <input name="type" class="hide" type="text" value="account"/>
             <input name="id" class="hide" type="number" value="{{ profile.id }}"/>
-            <button class="btn btn-mini" type="submit">Update</button>
+            <button class="btn btn-default btn-small" type="submit">Update</button>
         </form>
     </div>
 {% endblock %}
