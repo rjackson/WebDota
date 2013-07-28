@@ -18,7 +18,7 @@ app.add_template_filter(unix_strftime)
 # Setup steamodd
 steam.api.key.set(app.config['STEAM_API_KEY'])
 steam.api.socket_timeout.set(10)
-schema = steam.items.schema(570, "en_US")
+schema = steam.items.schema(570, "en_US") or []
 
 
 @cache.cached(timeout=60*60, key_prefix="league_passes")
@@ -38,6 +38,10 @@ def get_hero_name(hero_id):
         return [get_heroes().get(x) for x in hero_id]
     except TypeError:
         return get_heroes().get(hero_id)
+
+@app.template_filter("prettyprint")
+def prettyprint(data):
+    return pprint.pformat(data, indent=4)
 
 @app.route('/')
 def index():
@@ -81,7 +85,6 @@ def profile(_id):
                                commendations=commendations,
                                league_passes=all_league_passes,
                                matches=matches,
-                               prettydata=pprint.pformat(data.data, indent=4),
                                title=data.data.playerName)
 
 
@@ -93,7 +96,6 @@ def match(_id):
     else:
         return render_template("match.html",
                                match=data,
-                               prettydata=pprint.pformat(data.data, indent=4),
                                title="Match {}".format(data.id))
 
 
@@ -107,7 +109,12 @@ def search():
         return redirect("/")
     if _type == "account":
         if unicode.isdecimal(unicode(_id)):
-            return redirect("/profile/{}".format(_id))
+            _id = int(_id) & 0xFFFFFFFF
+            if _id == 0:
+                flash("Go away xPaw", "danger")
+                return redirect("/")
+            else:
+                return redirect("/profile/{}".format(_id))
         else:
             flash("Profile ID must be decimal!", "error")
             return redirect("/")

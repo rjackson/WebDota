@@ -25,6 +25,7 @@
             <li class="active"><a href="#overview" data-toggle="tab">Overview</a></li>
             <li><a href="#league_passes" data-toggle="tab">League Tickets</a></li>
             <li><a href="#matches" data-toggle="tab">Matches</a></li>
+            <li><a href="#passport" data-toggle="tab">Compendium</a></li>
             <li><a href="#data" data-toggle="tab">Data objects</a></li>
         </ul>
         <div class="tab-content">
@@ -86,8 +87,15 @@
                     </div>
                 {% endfor %}
             </div>
+            <div class="tab-pane" id="passport">
+                {% if profile.passportData %}
+                    {% include "passport.html" %}
+                {% else %}
+                    <p>No Compendium data available.  Try requesting an update to the profile data if this profile owns a Compendium.</p>
+                {% endif %}
+            </div>
             <div class="tab-pane" id="data">
-                <pre>{{ prettydata }}</pre>
+                <pre>{{ profile.data|prettyprint }}</pre>
             </div>
         </div>
     </div>
