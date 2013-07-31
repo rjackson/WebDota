@@ -65,12 +65,13 @@ var onSteamLogOn = function onSteamLogOn(){
                         "_last_updated": (Date.now() / 1000)
                     }, {upsert:true}, function(err){ console.log(err); });
                     jobCollection.remove({"type": "account", "id": accountId}, function(err){ console.log(err); });
-                });
 
-                if (profileData.hasPassport) {
-                    Dota2.passportDataRequest(accountId);
-                    jobCollection.update({"type": "passport", "id": accountId}, {"type": "passport", "id": accountId}, function(err){ console.log(err); });
-                }
+
+                    if (profileData.hasPassport) {
+                        Dota2.passportDataRequest(accountId);
+                        jobCollection.update({"type": "passport", "id": accountId}, {"type": "passport", "id": accountId}, function(err){ console.log(err); });
+                    }
+                });
             });
         });
 
