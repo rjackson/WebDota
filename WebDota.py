@@ -1,29 +1,35 @@
-from flask import Flask, render_template, flash, redirect, request
+from flask import Flask, render_template, flash, redirect, request, session, g
 from flask.ext.cache import Cache
+from flask.ext.openid import OpenID
 from mongokit import Connection
 import steam
-import pprint
 
-from models import Profile, Job, Match
-from filters import unix_strftime
+from models import Profile, Job, Match, User
+from filters import unix_strftime, prettyprint
 app = Flask(__name__)
+
 app.config.from_pyfile("settings.cfg")
 connection = Connection(app.config['MONGODB_HOST'],
                         app.config['MONGODB_PORT'])
 
 cache = Cache(app)
-connection.register([Profile, Job, Match])
+oid = OpenID(app)
+
+connection.register([Profile, Job, Match, User])
 app.add_template_filter(unix_strftime)
+app.add_template_filter(prettyprint)
 
 # Setup steamodd
 steam.api.key.set(app.config['STEAM_API_KEY'])
 steam.api.socket_timeout.set(10)
-schema = steam.items.schema(570, "en_US") or []
 
-
+# Helpers
 @cache.cached(timeout=60*60, key_prefix="league_passes")
 def get_league_passes():
-    return [x for x in schema if x.type == "League Pass"]
+    try:
+        return [x for x in steam.items.schema(570, "en_US") if x.type == "League Pass"]
+    except steam.api.APIError:
+        return []
 
 
 @cache.cached(timeout=60*60, key_prefix="heroes")
@@ -39,10 +45,42 @@ def get_hero_name(hero_id):
     except TypeError:
         return get_heroes().get(hero_id)
 
-@app.template_filter("prettyprint")
-def prettyprint(data):
-    return pprint.pformat(data, indent=4)
+# User authentication
+@app.route('/login')
+@oid.loginhandler
+def login():
+    if g.user is not None:
+        return redirect(oid.get_next_url())
+    return oid.try_login('http://steamcommunity.com/openid')
 
+
+@oid.after_login
+def create_or_login(resp):
+    _id = int(resp.identity_url.replace("http://steamcommunity.com/openid/id/", ""))
+    g.user = connection.User.find_one({"id": _id}) or connection.User({"id": _id})
+    g.user.update({"account_id": _id & 0xFFFFFFFF})
+    g.user.update({"nickname": steam.user.profile(_id).persona or _id})
+
+    g.user.save()
+    session['user_id'] = g.user.id
+    flash('You are logged in as %s' % g.user.nickname, "success")
+    return redirect(oid.get_next_url())
+
+
+@app.before_request
+def before_request():
+    g.user = None
+    if 'user_id' in session:
+        g.user = connection.User.find_one({"id": session['user_id']})
+
+
+@app.route('/logout')
+def logout():
+    session.pop('user_id', None)
+    return redirect(oid.get_next_url())
+
+
+# Routing
 @app.route('/')
 def index():
     return render_template("index.html",
@@ -50,9 +88,12 @@ def index():
                            profiles=connection.Profile.find(),
                            matches=connection.Match.find(),
                            title="WebDota - An experiment in getting banned.")
+
+
 @app.route("/account/<int:_id>")
 def account(_id):
     return redirect("/profile/{}".format(_id))
+
 
 @app.route("/profile/<int:_id>")
 def profile(_id):
@@ -62,7 +103,7 @@ def profile(_id):
     else:
         owned_league_passes = [x["itemDef"] for x in data.data.leaguePasses or []]
         all_league_passes = get_league_passes()
-        for x in all_league_passes :
+        for x in all_league_passes:
             x.owned = True if x.schema_id in owned_league_passes else False
 
         commendations = {
@@ -170,6 +211,7 @@ def update(_type=None, _id=None):
 
     flash("Update job, {}, added to job queue.".format((_type, _id)), "info")
     return redirect("/")
+
 
 # noinspection PyUnusedLocal
 @app.errorhandler(404)

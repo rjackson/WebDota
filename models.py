@@ -46,3 +46,18 @@ class Match(Document):
 
     def __repr__(self):
         return "<Match {!r}>".format(self.id)
+
+
+class User(Document):
+    __collection__ = "users"
+    __database__ = "webdota"
+
+    structure = {
+        "id": long,
+        "account_id": int,
+        "nickname": basestring
+    }
+    use_dot_notation = True
+
+    def __repr__(self):
+        return "<Match {!r}>".format(self.id)

@@ -1,61 +1,72 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="utf-8">
-        <title>{% block title %}{{title}}{% endblock title %}</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<head>
+    <meta charset="utf-8">
+    <title>{% block title %}{{title}}{% endblock title %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
-        <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.0-rc1/css/bootstrap.min.css" rel="stylesheet">
-        {%- block style %}
-        {%- endblock style %}
-    </head>
+    <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.0-rc1/css/bootstrap.min.css" rel="stylesheet"/>
+    {%- block style %}
+    {%- endblock style %}
+</head>
 
-    <body>
-        <div class="navbar navbar-static-top">
-            <div class="container">
-                <a class="navbar-brand" href="/">WebDota</a>
-                <!--<ul class="nav navbar-nav">
-                    <li><a>HHHH</a></li>
-                </ul>-->
+<body>
+    <div class="navbar navbar-static-top">
+        <div class="container">
+            <a class="navbar-brand" href="/">WebDota</a>
+            <ul class="nav navbar-nav pull-right">
+                <li><form class="navbar-form" action="/search">
+                <select name="type" class="form-control" style="width:100px;">
+                    <option value="account">Account</option>
+                    <option value="match">Match</option>
+                </select>
+                <input name="id" class="form-control" type="text" placeholder="ID"  style="width:200px;">
+                <button class="btn btn-default" type="submit">Search</button>
+            </form></li>
 
-                <form class="navbar-form pull-right" action="/search">
-                    <select name="type" class="form-control" style="width:100px;">
-                        <option value="account">Account</option>
-                        <option value="match">Match</option>
-                    </select>
-                    <input name="id" class="form-control" type="text" placeholder="ID"  style="width:200px;">
-                    <button class="btn btn-default" type="submit">Search</button>
-                </form>
+            {% if g.user %}
+                <li class="dropdown">
+                    <a class="dropdown-toggle" data-toggle="dropdown"> {{ g.user.nickname }} <span class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="/profile/{{ g.user.account_id }}">Profile</a></li>
+                        <li><a href="/logout">Logout</a></li>
+                    </ul>
+                </li>
+            {% else %}
+                <li><a href="/login"><img src="{{ url_for('static', filename='images/sits_small.png') }}" alt="Sign in with Steam"/></a></li>
+            {% endif %}
+            </ul>
+
+        </div>
+    </div>
+    <div class="container">
+        {% for category, message in get_flashed_messages(with_categories=true) %}
+            <div class="flash alert {{ "alert-" + category if category != "message" else ""}}">
+                <button type="button" class="close" data-dismiss="alert">&times;</button>
+                {{ message }}
             </div>
-        </div>
-        <div class="container">
-            {% for category, message in get_flashed_messages(with_categories=true) %}
-                <div class="flash alert {{ "alert-" + category if category != "message" else ""}}">
-                    <button type="button" class="close" data-dismiss="alert">&times;</button>
-                    {{ message }}
-                </div>
-            {% endfor %}
-            {% block content %}
-            {% endblock %}
-        </div>
-        <hr>
-        <div class="container">
-            <p class="text-muted">© <a href="http://rjackson.me">RJ</a>, PROBABLY.</p>
-        </div>
-        <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
-        <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0-rc1/js/bootstrap.min.js"></script>
-        <script type="text/javascript">
-            // Javascript to enable link to tab
-            var hash = document.location.hash;
-            var prefix = "tab_";
-            if (hash) {
-                $('.nav-tabs a[href='+hash.replace(prefix,"")+']').tab('show');
-            }
+        {% endfor %}
+        {% block content %}
+        {% endblock %}
+    </div>
+    <hr>
+    <div class="container">
+        <p class="text-muted">© <a href="http://rjackson.me">RJ</a>, PROBABLY.</p>
+    </div>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+    <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0-rc1/js/bootstrap.min.js"></script>
+    <script type="text/javascript">
+        // Javascript to enable link to tab
+        var hash = document.location.hash;
+        var prefix = "tab_";
+        if (hash) {
+            $('.nav-tabs a[href='+hash.replace(prefix,"")+']').tab('show');
+        }
 
-            // Change hash for page-reload
-            $('.nav-tabs a').on('click', function (e) {
-                window.location.hash = e.target.hash.replace("#", "#" + prefix);
-            });
-        </script>
-    </body>
+        // Change hash for page-reload
+        $('.nav-tabs a').on('click', function (e) {
+            window.location.hash = e.target.hash.replace("#", "#" + prefix);
+        });
+    </script>
+</body>
 </html>
