@@ -50,7 +50,6 @@ def index():
                            profiles=connection.Profile.find(),
                            matches=connection.Match.find(),
                            title="WebDota - An experiment in getting banned.")
-
 @app.route("/account/<int:_id>")
 def account(_id):
     return redirect("/profile/{}".format(_id))
@@ -86,6 +85,11 @@ def profile(_id):
                                league_passes=all_league_passes,
                                matches=matches,
                                title=data.data.playerName)
+
+
+@app.route("/passport/<int:_id>")
+def passport(_id):
+    return redirect("/profile/{}#tab_passport".format(_id))
 
 
 @app.route("/match/<int:_id>")

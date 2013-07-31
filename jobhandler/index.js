@@ -69,15 +69,21 @@ var onSteamLogOn = function onSteamLogOn(){
 
                 if (profileData.hasPassport) {
                     Dota2.passportDataRequest(accountId);
+                    jobCollection.update({"type": "passport", "id": accountId}, {"type": "passport", "id": accountId}, function(err){ console.log(err); });
                 }
             });
         });
 
         Dota2.on("passportData", function(accountId, passportData) {
             db.collection('profiles', function(err, profileCollection) {
-                profileCollection.findOne({"id": accountId}, function(err, data){
-                    data.passportData = passportData;
-                    profileCollection.update({"id": accountId}, data, {upsert:true}, function(err){ console.log(err); });
+                if(err) throw err;
+                db.collection('jobs', function(err, jobCollection){
+                    if(err) throw err;
+                    profileCollection.findOne({"id": accountId}, function(err, data){
+                        data.passportData = passportData;
+                        profileCollection.update({"id": accountId}, data, {upsert:true}, function(err){ console.log(err); });
+                    });
+                    jobCollection.remove({"type": "passport", "id": accountId}, function(err){ console.log(err); });
                 });
             });
         });
